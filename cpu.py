@@ -25,9 +25,9 @@ class CPU:
             0b01010100: self.JMP,
             0b01010101: self.JEQ,
             0b01010110: self.JNE,
+            0b10101011: self.XOR,
             0b10101000: self.AND,
             0b10101010: self.OR,
-            0b10101011: self.XOR,
             0b01101001: self.NOT,
             0b10101100: self.SHL,
             0b10101101: self.SHR,
@@ -69,7 +69,7 @@ class CPU:
 
     def MOD(self, op1, op2):
         if self.reg[op2] == 0:
-            print('Error')
+            print('Error: MOD requires non-zero values')
             self.running = False
         else:
             self.alu('MOD', op1, op2)
