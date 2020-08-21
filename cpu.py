@@ -24,8 +24,14 @@ class CPU:
             0b10100111: self.CMP,
             0b01010100: self.JMP,
             0b01010101: self.JEQ,
-            0b01010110: self.JNE
-
+            0b01010110: self.JNE,
+            0b10101000: self.AND,
+            0b10101010: self.OR,
+            0b10101011: self.XOR,
+            0b01101001: self.NOT,
+            0b10101100: self.SHL,
+            0b10101101: self.SHR,
+            0b10100100: self.MOD
         }
 
     def LDI(self, op1, op2):
@@ -40,11 +46,36 @@ class CPU:
     def ADD(self, op1, op2):
         self.alu('ADD', op1, op2)
 
-    def CMP(self, op1, op2):
-        self.alu('CMP', op1, op2)
-
     def MUL(self, op1, op2):
         self.alu('MUL', op1, op2)
+
+    def AND(self, op1, op2):
+        self.alu('AND', op1, op2)
+
+    def OR(self, op1, op2):
+        self.alu('OR', op1, op2)
+
+    def XOR(self, op1, op2):
+        self.alu('XOR', op1, op2)
+
+    def NOT(self, op1, op2):
+        self.alu('NOT', op1, op2)
+
+    def SHL(self, op1, op2):
+        self.alu('SHL', op1, op2)
+
+    def SHR(self, op1, op2):
+        self.alu('SHR', op1, op2)
+
+    def MOD(self, op1, op2):
+        if self.reg[op2] == 0:
+            print('Error')
+            self.running = False
+        else:
+            self.alu('MOD', op1, op2)
+
+    def CMP(self, op1, op2):
+        self.alu('CMP', op1, op2)
 
     def JMP(self, op1, op2):
         self.pc = self.reg[op1]
@@ -81,6 +112,39 @@ class CPU:
 
         self.op_size = 0
 
+    def alu(self, op, reg_a, reg_b):
+        if op == "ADD":
+            self.reg[reg_a] += self.reg[reg_b]
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "DIV":
+            self.reg[reg_a] /= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] < self.reg[reg_b]:  # L
+                self.fl = {'l': 1, 'g': 0, 'e': 0}
+            elif self.reg[reg_a] > self.reg[reg_b]:  # G
+                self.fl = {'l': 0, 'g': 1, 'e': 0}
+            elif self.reg[reg_a] == self.reg[reg_b]:  # E
+                self.fl = {'l': 0, 'g': 0, 'e': 1}
+        elif op == 'AND':
+            self.reg[reg_a] = self.reg[reg_a] & self.reg[reg_b]
+        elif op == 'OR':
+            self.reg[reg_a] = self.reg[reg_a] | self.reg[reg_b]
+        elif op == 'XOR':
+            self.reg[reg_a] = self.reg[reg_a] ^ self.reg[reg_b]
+        elif op == 'NOT':
+            self.reg[reg_a] = self.reg[reg_a] ^ 0b11111111
+        elif op == 'SHL':
+            self.reg[reg_a] = self.reg[reg_a] << self.reg[reg_b]
+        elif op == 'SHR':
+            self.reg[reg_a] = self.reg[reg_a] >> self.reg[reg_b]
+        elif op == 'MOD':
+            self.reg[reg_a] = self.reg[reg_a] % self.reg[reg_b]
+        else:
+            raise Exception("Unsupported ALU operation")
+
     def load(self, filename):
         MAR = 0
 
@@ -101,25 +165,6 @@ class CPU:
         except FileNotFoundError:
             print(f"{sys.argv[0]}: {filename} not found")
             sys.exit(2)
-
-    def alu(self, op, reg_a, reg_b):
-        if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        elif op == "SUB":
-            self.reg[reg_a] -= self.reg[reg_b]
-        elif op == "MUL":
-            self.reg[reg_a] *= self.reg[reg_b]
-        elif op == "DIV":
-            self.reg[reg_a] /= self.reg[reg_b]
-        elif op == "CMP":
-            if self.reg[reg_a] < self.reg[reg_b]:  # L
-                self.fl = {'l': 1, 'g': 0, 'e': 0}
-            elif self.reg[reg_a] > self.reg[reg_b]:  # G
-                self.fl = {'l': 0, 'g': 1, 'e': 0}
-            elif self.reg[reg_a] == self.reg[reg_b]:  # E
-                self.fl = {'l': 0, 'g': 0, 'e': 1}
-        else:
-            raise Exception("Unsupported ALU operation")
 
     def ram_read(self, MAR):
         return self.ram[MAR]
